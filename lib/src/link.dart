@@ -46,8 +46,7 @@ class WebSocketLink extends Link {
   static const int open = 1;
   static const int closing = 2;
   static const int closed = 3;
-  final BehaviorSubject<int> _connectionStateController =
-      BehaviorSubject<int>();
+  final BehaviorSubject<int> _connectionStateController = BehaviorSubject<int>();
 
   Stream<GraphQLSocketMessage> _messageStream;
   StreamSubscription<GraphQLSocketMessage> _messageSubscription;
@@ -61,8 +60,7 @@ class WebSocketLink extends Link {
   /// Also [initialPayload] to be passed with the first request to the GraphQL server.
   WebSocketLink(
     String uri, {
-    @Deprecated("Will be removed in favor of channelGenerator")
-        WebSocketChannel channel,
+    @Deprecated("Will be removed in favor of channelGenerator") WebSocketChannel channel,
     ChannelGenerator channelGenerator,
     this.serializer = const RequestSerializer(),
     this.parser = const ResponseParser(),
@@ -71,7 +69,9 @@ class WebSocketLink extends Link {
   }) : assert(uri == null || (channel == null && channelGenerator == null)) {
     _uri = uri;
     _channelGenerator = channelGenerator;
-    _channel = channel ?? _channelGenerator();
+    if (channel != null || channelGenerator != null) {
+      _channel = channel ?? _channelGenerator();
+    }
     _connectionStateController.value = closed;
   }
 
@@ -84,16 +84,13 @@ class WebSocketLink extends Link {
     final String id = Uuid.randomUuid().toString();
 
     response.onListen = () {
-      final Stream<int> waitForConnectedState = _connectionStateController
-          .startWith(open)
-          .where((state) => state == open)
-          .take(1);
+      final Stream<int> waitForConnectedState =
+          _connectionStateController.startWith(open).where((state) => state == open).take(1);
 
       waitForConnectedState.listen(
         (_) {
           // Filter own messages by `id`.
-          final Stream<GraphQLSocketMessage> dataErrorComplete =
-              _messageStream.where(
+          final Stream<GraphQLSocketMessage> dataErrorComplete = _messageStream.where(
             (GraphQLSocketMessage message) {
               if (message is SubscriptionData) {
                 return message.id == id;
@@ -109,16 +106,12 @@ class WebSocketLink extends Link {
 
           // Close [response] when receiving `SubscriptionComplete`.
           final Stream<GraphQLSocketMessage> subscriptionComplete =
-              dataErrorComplete
-                  .where((GraphQLSocketMessage message) =>
-                      message is SubscriptionComplete)
-                  .take(1);
+              dataErrorComplete.where((GraphQLSocketMessage message) => message is SubscriptionComplete).take(1);
           subscriptionComplete.listen((_) => response.close());
 
           // Forward data messages to [response].
           dataErrorComplete
-              .where(
-                  (GraphQLSocketMessage message) => message is SubscriptionData)
+              .where((GraphQLSocketMessage message) => message is SubscriptionData)
               .cast<SubscriptionData>()
               .listen(
             (SubscriptionData message) {
@@ -140,8 +133,7 @@ class WebSocketLink extends Link {
 
           // Forward errors messages to [response].
           dataErrorComplete
-              .where((GraphQLSocketMessage message) =>
-                  message is SubscriptionError)
+              .where((GraphQLSocketMessage message) => message is SubscriptionError)
               .listen(response.addError);
 
           // Send the request.
@@ -170,10 +162,7 @@ class WebSocketLink extends Link {
 
       _connectionStateController.value = open;
 
-      _messageStream = _channel.stream
-          .map(_parseSocketMessage)
-          .cast<GraphQLSocketMessage>()
-          .asBroadcastStream();
+      _messageStream = _channel.stream.map(_parseSocketMessage).cast<GraphQLSocketMessage>().asBroadcastStream();
       _messageSubscription = _messageStream.listen(
         (_) {},
         onDone: () async {
@@ -197,8 +186,7 @@ class WebSocketLink extends Link {
             .where(
               (GraphQLSocketMessage message) => message is ConnectionKeepAlive,
             )
-            .map<ConnectionKeepAlive>(
-                (message) => message as ConnectionKeepAlive)
+            .map<ConnectionKeepAlive>((message) => message as ConnectionKeepAlive)
             .timeout(inactivityTimeout, onTimeout: (_) {
           _close();
         }).listen(null);
@@ -243,8 +231,7 @@ class WebSocketLink extends Link {
   }
 
   static GraphQLSocketMessage _parseSocketMessage(dynamic message) {
-    final Map<String, dynamic> map =
-        json.decode(message as String) as Map<String, dynamic>;
+    final Map<String, dynamic> map = json.decode(message as String) as Map<String, dynamic>;
     final String type = (map["type"] ?? "unknown") as String;
     final dynamic payload = map["payload"] ?? <String, dynamic>{};
     final String id = (map["id"] ?? "none") as String;
