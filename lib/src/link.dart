@@ -6,10 +6,11 @@ import "package:gql_exec/gql_exec.dart";
 import "package:gql_link/gql_link.dart";
 import "package:rxdart/rxdart.dart";
 import "package:uuid_enhanced/uuid.dart";
+import "package:web_socket_channel/io.dart";
 import "package:web_socket_channel/web_socket_channel.dart";
 import "package:web_socket_channel/status.dart" as websocket_status;
 
-typedef ChannelGenerator = WebSocketChannel Function();
+typedef ChannelGenerator = IOWebSocketChannel Function();
 
 /// A Universal WebSocket [Link] implementation to support the
 /// WebSocket-GraphQL transport.
@@ -19,7 +20,9 @@ typedef ChannelGenerator = WebSocketChannel Function();
 /// a [Request] is handled by this [WebSocketLink].
 class WebSocketLink extends Link {
   String _uri;
-  WebSocketChannel _channel;
+  IOWebSocketChannel _channel;
+
+  Map<String, dynamic> headers;
 
   /// A function that returns a `WebSocketChannel`.
   /// This is useful if you have dynamic Auth token and want to regenerate it after the socket has disconnected.
@@ -60,8 +63,9 @@ class WebSocketLink extends Link {
   /// Also [initialPayload] to be passed with the first request to the GraphQL server.
   WebSocketLink(
     String uri, {
-    @Deprecated("Will be removed in favor of channelGenerator") WebSocketChannel channel,
+    @Deprecated("Will be removed in favor of channelGenerator") IOWebSocketChannel channel,
     ChannelGenerator channelGenerator,
+    this.headers,
     this.serializer = const RequestSerializer(),
     this.parser = const ResponseParser(),
     this.initialPayload,
@@ -158,7 +162,7 @@ class WebSocketLink extends Link {
   Future<void> _connect() async {
     _connectionStateController.value = connecting;
     try {
-      _channel ??= WebSocketChannel.connect(Uri.parse(_uri));
+      _channel ??= IOWebSocketChannel.connect(Uri.parse(_uri), headers: headers);
 
       _connectionStateController.value = open;
 
