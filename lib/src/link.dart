@@ -5,7 +5,7 @@ import "package:gql_websocket_link/gql_websocket_link.dart";
 import "package:gql_exec/gql_exec.dart";
 import "package:gql_link/gql_link.dart";
 import "package:rxdart/rxdart.dart";
-import "package:uuid_enhanced/uuid.dart";
+import "package:uuid/uuid.dart";
 import "package:web_socket_channel/io.dart";
 import "package:web_socket_channel/web_socket_channel.dart";
 import "package:web_socket_channel/status.dart" as websocket_status;
@@ -85,7 +85,7 @@ class WebSocketLink extends Link {
       await _connect();
     }
     final StreamController<Response> response = StreamController();
-    final String id = Uuid.randomUuid().toString();
+    final String id = Uuid.v4().toString();
 
     response.onListen = () {
       final Stream<int> waitForConnectedState =
