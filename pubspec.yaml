@@ -10,7 +10,7 @@ dependencies:
   gql_link: ^0.4.0
   uuid_enhanced: ^3.0.2
   rxdart: ^0.25.0-beta3
-  gql: ^0.12.3
+  gql: ^0.13.0
   web_socket_channel: ^1.1.0
 dev_dependencies:
   test: ^1.14.3
