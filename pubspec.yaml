@@ -8,7 +8,7 @@ dependencies:
   meta: ^1.1.8
   gql_exec: ^0.3.0
   gql_link: ^0.4.0
-  uuid_enhanced: ^3.0.2
+  uuid: ^3.0.4
   rxdart: ^0.27.1
   gql: ^0.13.0
   web_socket_channel: ^1.1.0
