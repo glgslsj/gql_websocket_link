@@ -6,7 +6,7 @@ environment:
   sdk: ">=2.7.2 <3.0.0"
 dependencies:
   meta: ^1.1.8
-  gql_exec: ^0.2.5
+  gql_exec: ^0.3.0
   gql_link: ^0.4.0
   uuid_enhanced: ^3.0.2
   rxdart: ^0.25.0-beta3
